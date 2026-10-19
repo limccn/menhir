@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+contracts/artifacts/
+contracts/cache/
+contracts/types/
+contracts/ignition/deployments/
+
+# NOTE: contracts/deployments/ is intentionally NOT ignored. It records the
+# canonical MemoryRegistry address per network — the only authoritative
+# pointer to a live deployment. Never `rm -rf` it; committing it is the point.
