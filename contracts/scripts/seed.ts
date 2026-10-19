@@ -13,6 +13,8 @@ import {
 } from "@menhir/core";
 import type { Hex } from "viem";
 
+import { scanLogs } from "./lib/scanLogs.js";
+
 // Seeds a deployed registry with a small, coherent set of memories so the UI
 // has real state to render. Everything here is derived with @menhir/core —
 // the same code the browser runs — so a bug in the digest rules would show up
@@ -127,44 +129,40 @@ const committed: Seeded[] = [];
  * contract stores by commitmentHash, and that hash covers blockHeight.
  *
  * Starts at the deployment block, not 0: Base Sepolia is past 48M blocks and
- * a from-genesis range is rejected outright by public RPCs. The range is
- * chunked for the same reason — public endpoints cap getLogs spans.
+ * a from-genesis range is rejected outright by public RPCs. The scan itself
+ * adapts its window at runtime — public endpoints cap getLogs spans (Base
+ * Sepolia's allows 200 blocks and rejects larger requests with an opaque HTTP
+ * error), so this value is only the initial upper bound, not the real chunk.
  */
 const SCAN_CHUNK = 10_000n;
 
 async function existingByContentHash(): Promise<Map<string, Hex>> {
   const latest = await publicClient.getBlockNumber();
-  const byContentHash = new Map<string, Hex>();
 
-  for (let from = deployBlock; from <= latest; from += SCAN_CHUNK) {
-    const to = from + SCAN_CHUNK - 1n > latest ? latest : from + SCAN_CHUNK - 1n;
-    let logs;
-    try {
-      logs = await publicClient.getContractEvents({
+  const logs = await scanLogs({
+    fromBlock: deployBlock,
+    toBlock: latest,
+    initialChunkSize: SCAN_CHUNK,
+    fetchLogs: (fromBlock, toBlock) =>
+      publicClient.getContractEvents({
         address: registryAddress,
         abi: registry.abi,
         eventName: "MemoryCommitted",
         args: { owner },
-        fromBlock: from,
-        toBlock: to,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `getLogs failed for blocks ${from}..${to}. Lower SCAN_CHUNK in ` +
-          `scripts/seed.ts or point at an RPC with a wider range.\nUnderlying: ${message}`,
-      );
-    }
+        fromBlock,
+        toBlock,
+      }),
+  });
 
-    for (const log of logs) {
-      const args = log.args as {
-        contentHash?: Hex;
-        commitmentHash?: Hex;
-      };
-      if (args.contentHash !== undefined && args.commitmentHash !== undefined) {
-        // Newest wins: a later version of the same bytes supersedes the older.
-        byContentHash.set(args.contentHash.toLowerCase(), args.commitmentHash);
-      }
+  const byContentHash = new Map<string, Hex>();
+  for (const log of logs) {
+    const args = log.args as {
+      contentHash?: Hex;
+      commitmentHash?: Hex;
+    };
+    if (args.contentHash !== undefined && args.commitmentHash !== undefined) {
+      // Newest wins: a later version of the same bytes supersedes the older.
+      byContentHash.set(args.contentHash.toLowerCase(), args.commitmentHash);
     }
   }
 
