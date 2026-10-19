@@ -8,6 +8,12 @@ contracts/cache/
 contracts/types/
 contracts/ignition/deployments/
 
+# tsc output emitted beside the .ts sources (tsconfig has no outDir).
+# These are build products, not sources — never commit them.
+contracts/**/*.js
+contracts/**/*.js.map
+!contracts/src/**/*.js
+
 # NOTE: contracts/deployments/ is intentionally NOT ignored. It records the
 # canonical MemoryRegistry address per network — the only authoritative
 # pointer to a live deployment. Never `rm -rf` it; committing it is the point.

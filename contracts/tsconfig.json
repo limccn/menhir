@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    // This project is typechecked, never emitted: .js output would land
+    // beside the .ts sources and be picked up as runtime modules.
+    "noEmit": true
   },
   // `artifacts` must be included: `hardhat build` writes per-contract
   // `artifacts/<Contract>.sol/artifacts.d.ts`, whose module augmentation
