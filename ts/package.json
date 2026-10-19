@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.test.json"
   },
   "dependencies": {
     "canonicalize": "5.1.0",
