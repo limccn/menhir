@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "hardhat compile",
+    "build": "hardhat build",
     "test": "hardhat test",
+    "typecheck": "hardhat build && tsc -p tsconfig.json --noEmit",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
     "seed:sepolia": "hardhat run scripts/seed.ts --network baseSepolia"
   },

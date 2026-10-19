@@ -10,5 +10,10 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["hardhat.config.ts", "scripts", "test"]
+  // `artifacts` must be included: `hardhat build` writes per-contract
+  // `artifacts/<Contract>.sol/artifacts.d.ts`, whose module augmentation
+  // populates `ArtifactMap`. Without it every `viem.deployContract` /
+  // `getContractAt` return type degrades to `unknown` and test/script code
+  // silently loses type safety (12 errors in test/MemoryRegistry.ts).
+  "include": ["hardhat.config.ts", "scripts", "test", "artifacts"]
 }
