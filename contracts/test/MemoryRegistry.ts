@@ -6,6 +6,7 @@ import {
   commitmentHash as tsCommitmentHash,
   type Commitment,
 } from "@menhir/core";
+import { loadVectors } from "@menhir/core/vectors";
 import { getAddress, type Hex } from "viem";
 
 const ZERO32 = `0x${"0".repeat(64)}` as Hex;
@@ -98,23 +99,28 @@ describe("MemoryRegistry", async function () {
       assert.equal(await registry.read.isRetracted([h]), false);
     });
 
-    it("TS commitmentHash == Solidity commitmentHash for a 100-struct corpus", async function () {
+    it("TS commitmentHash == Solidity commitmentHash for the SHARED 100-struct corpus", async function () {
+      // The corpus is the committed artifact from @menhir/core, not a loop
+      // built here. A local loop proves only that two functions in this
+      // process agree; the artifact is what migrates between repos and what
+      // the golden values were frozen against. Gate G2 depends on this
+      // distinction (core-ts PRD: "the golden corpus becomes the shared
+      // contract").
       const registry = await deploy();
-      const base = await makeCommitment();
-      for (let i = 0; i < 100; i += 1) {
-        const c: Commitment = {
-          owner: owner,
-          contentHash: b32(1000 + i),
-          cidDigest: b32(2000 + i),
-          signer: owner,
-          blockHeight: base.blockHeight,
-          op: i % 2 === 0 ? 0 : 1,
-          prev: i === 0 ? ZERO32 : b32(3000 + i),
-        };
+      const { commitments } = loadVectors();
+      assert.equal(commitments.length, 100, "corpus must contain exactly 100 structs");
+
+      for (const [index, vector] of commitments.entries()) {
+        const c = vector.commitment;
         assert.equal(
           tsCommitmentHash(c),
+          vector.commitmentHash,
+          `TS hash drifted from the golden value at index ${index}`,
+        );
+        assert.equal(
+          vector.commitmentHash,
           await solidityHash(registry, c),
-          `mismatch at corpus index ${i}`,
+          `Solidity hash != golden value at index ${index}`,
         );
       }
     });

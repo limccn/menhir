@@ -1,0 +1,18 @@
+{
+  // Node-only entry points (`@menhir/core/vectors`). Kept as a separate
+  // program so the main build (`tsconfig.json`, browser-safe) never needs
+  // @types/node — that separation is what enforces core-ts design §1: no
+  // Node builtins reachable from the package root.
+  //
+  // moduleResolution must be NodeNext here: with `bundler`, TS 7 does not
+  // resolve the `node:` specifiers to @types/node (observed: TS2591).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/vectors.ts", "src/vectors-node.ts", "src/commitment.ts", "src/canon.ts", "src/errors.ts"]
+}

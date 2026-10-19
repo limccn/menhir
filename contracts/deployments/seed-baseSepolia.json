@@ -1,0 +1,46 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "registry": "0xC85ed11d3065739F1829A114e420584bEC3FDFEF",
+  "owner": "0x330c67886612ba88b4895739f2e610f01f233d78",
+  "seeded": [
+    {
+      "label": "seed-1 (active)",
+      "commitmentHash": "0xa03cfc89d3087a034740fa16eca095762711abc1c400a482d3e99ad528853108",
+      "cid": "bafkreicc7pjshatzqedd2y5htx7vsec5i53em72htdj6acxo64ihg2h5wa",
+      "contentHash": "0x1346c792e81f0047cae9bc201cb7aecb83af563dd727678a6c3c8f0141cdac26",
+      "cidDigest": "0x42fbd323827981063d63a79dff59105d4776467f4798d3e00aeef7107368fdb0",
+      "canonical": "{\"format\":\"text.v0\",\"text\":\"A memory anchored by the menhir seed script.\"}",
+      "tags": [
+        "layer:deep",
+        "topic:seed"
+      ],
+      "retracted": false
+    },
+    {
+      "label": "seed-2 (version root)",
+      "commitmentHash": "0xba008ada3cfc2fcf64133e2d120ff43d088062ced2e766819ab536821454eb28",
+      "cid": "bafkreiewysadspxvonzkw64x2iaenirj3ecawqxhynt2wnz3jil3utzy74",
+      "contentHash": "0xb19e817786e004ab29b5452ebcf3999f28475f6439e1a117870d3c2025d0b4b1",
+      "cidDigest": "0x96c480393ef57372ab7b97d20046a229d9040b42e7c367ab373b4a17ba4f38ff",
+      "canonical": "{\"format\":\"text.v0\",\"text\":\"The first version of a superseded memory.\"}",
+      "tags": [
+        "layer:semantic"
+      ],
+      "retracted": true
+    },
+    {
+      "label": "seed-3 (successor)",
+      "commitmentHash": "0x167c9885da8a7779e5c8f8035f3d263c994266c7c2e3bb1d0da01d154e026876",
+      "cid": "bafkreicc4vr7ech2xvr6yuc7cduox2fe4x4qjnvs5fcackbpe64ofoextq",
+      "contentHash": "0x0592678e4916976de61fa9b3f2aef1756ecc35456478f0f768654edd52b8058b",
+      "cidDigest": "0x42e563f208fabd63ec505f10e8ebe8a4e5f904b6b2e94401282f27b8e2b8979c",
+      "canonical": "{\"format\":\"text.v0\",\"text\":\"The successor version that replaces seed-2.\"}",
+      "tags": [
+        "layer:semantic"
+      ],
+      "retracted": false
+    }
+  ],
+  "seededAt": "2026-10-19T07:06:34.686Z"
+}

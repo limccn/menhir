@@ -1,0 +1,117 @@
+{
+  "contracts": {
+    "src/MemoryRegistry.sol:MemoryRegistry": {
+      "sourceName": "src/MemoryRegistry.sol",
+      "contractName": "MemoryRegistry",
+      "proxyChain": [],
+      "deployment": {
+        "min": 1230840,
+        "max": 1230840,
+        "avg": 1230840,
+        "median": 1230840,
+        "count": 32,
+        "runtimeSize": 5387
+      },
+      "functions": {
+        "commit": {
+          "min": 122513,
+          "max": 145012,
+          "avg": 131058,
+          "median": 123972,
+          "count": 22
+        },
+        "commitBatch": {
+          "min": 531494,
+          "max": 6511292,
+          "avg": 3521393,
+          "median": 3521393,
+          "count": 2
+        },
+        "commitmentDigest": {
+          "min": 24690,
+          "max": 24690,
+          "avg": 24690,
+          "median": 24690,
+          "count": 1
+        },
+        "commitmentHash": {
+          "min": 23640,
+          "max": 23820,
+          "avg": 23777,
+          "median": 23790,
+          "count": 100
+        },
+        "DOMAIN_SEPARATOR": {
+          "min": 21415,
+          "max": 21415,
+          "avg": 21415,
+          "median": 21415,
+          "count": 2
+        },
+        "getCommitment": {
+          "min": 33211,
+          "max": 33211,
+          "avg": 33211,
+          "median": 33211,
+          "count": 4
+        },
+        "isActive": {
+          "min": 26319,
+          "max": 26331,
+          "avg": 26330,
+          "median": 26331,
+          "count": 17
+        },
+        "isDeep": {
+          "min": 24114,
+          "max": 24126,
+          "avg": 24125,
+          "median": 24126,
+          "count": 10
+        },
+        "isRetracted": {
+          "min": 24122,
+          "max": 24134,
+          "avg": 24132,
+          "median": 24134,
+          "count": 5
+        },
+        "replacedByOf": {
+          "min": 24110,
+          "max": 24110,
+          "avg": 24110,
+          "median": 24110,
+          "count": 1
+        },
+        "retract": {
+          "min": 26359,
+          "max": 75392,
+          "avg": 51222,
+          "median": 50655,
+          "count": 9
+        },
+        "retractionOf": {
+          "min": 26267,
+          "max": 26267,
+          "avg": 26267,
+          "median": 26267,
+          "count": 1
+        },
+        "rolesOf": {
+          "min": 24530,
+          "max": 24542,
+          "avg": 24536,
+          "median": 24536,
+          "count": 2
+        },
+        "setSigner": {
+          "min": 24194,
+          "max": 46106,
+          "avg": 43366,
+          "median": 46106,
+          "count": 8
+        }
+      }
+    }
+  }
+}

@@ -16,5 +16,10 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true
   },
-  "include": ["src"]
+  // `vectors-node.ts` is the package's ONLY Node-only module. Excluding it
+  // here is what makes the main build browser-safe by construction: if any
+  // other src file starts importing a `node:*` builtin, this build fails.
+  // It is compiled separately by tsconfig.node.json into the same dist/.
+  "include": ["src"],
+  "exclude": ["src/vectors-node.ts"]
 }

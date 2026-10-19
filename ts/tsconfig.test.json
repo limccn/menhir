@@ -6,7 +6,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "rootDir": "."
+    "rootDir": ".",
+    // Tests run under Node (vitest, the generator script), so node types are
+    // available here. The browser-safety guarantee is enforced by
+    // `check:browser`, which compiles test/browser-entry.ts with NO tsconfig
+    // and therefore no node types.
+    "types": ["node"]
   },
   "include": ["src", "test"]
 }

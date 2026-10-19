@@ -37,15 +37,34 @@ function assertNormalized(text: string): void {
   if (text.normalize('NFC') !== text) throw new NonNormalizedInputError();
 }
 
+/**
+ * A JSON object is an object whose prototype is Object.prototype (or null).
+ * `typeof x === 'object'` alone would accept Date, Map, Set, RegExp, class
+ * instances — all of which `canonicalize` silently rewrites (Date → ISO
+ * string, Map → {}), producing a hash for content the user never wrote.
+ * R1 (review 2026-10-19): reject them instead (policy: reject, never
+ * silently normalize).
+ */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
 }
 
 function assertJsonValue(value: unknown, path: string, depth = 0): void {
   if (depth > 64) throw new SchemaViolationError(`meta nested too deep at ${path}`);
   if (value === null) return;
   const t = typeof value;
-  if (t === 'string' || t === 'boolean') return;
+  if (t === 'string') {
+    // R2 (review 2026-10-19): normalization is checked for EVERY string in
+    // the hashed object, not just `text`. Otherwise two visually identical
+    // memories (NFC vs NFD spelling inside meta) produce different hashes.
+    assertNormalized(value as string);
+    return;
+  }
+  if (t === 'boolean') return;
   if (t === 'number') {
     if (!Number.isFinite(value as number)) {
       throw new SchemaViolationError(`non-finite number at ${path}`);
@@ -60,6 +79,7 @@ function assertJsonValue(value: unknown, path: string, depth = 0): void {
   }
   if (isPlainObject(value)) {
     for (const [key, child] of Object.entries(value)) {
+      assertNormalized(key);
       assertJsonValue(child, `${path}.${key}`, depth + 1);
     }
     return;
@@ -93,6 +113,7 @@ export function parseMemoryContent(input: unknown): MemoryContent {
     if (!Array.isArray(refs) || !refs.every((r) => typeof r === 'string')) {
       throw new SchemaViolationError('refs must be an array of strings');
     }
+    for (const ref of refs as string[]) assertNormalized(ref);
     out.refs = refs as string[];
   }
   if (meta !== undefined) {
@@ -111,7 +132,14 @@ export function parseMemoryContent(input: unknown): MemoryContent {
  * NFC or contains lone surrogates.
  */
 export function canonicalBytes(content: MemoryContent): Uint8Array {
+  // R2: `canonicalBytes` is a public entry point — callers may hand-build a
+  // MemoryContent instead of going through parseMemoryContent, so the whole
+  // hashed object is re-validated here (not just `text`).
   assertNormalized(content.text);
+  if (content.refs !== undefined) {
+    for (const ref of content.refs) assertNormalized(ref);
+  }
+  if (content.meta !== undefined) assertJsonValue(content.meta, 'meta');
   const json = canonicalize(content);
   if (json === undefined) {
     throw new SchemaViolationError('content is not JSON-serializable');
@@ -122,6 +150,10 @@ export function canonicalBytes(content: MemoryContent): Uint8Array {
 /** JCS string form (same bytes as canonicalBytes, as text). */
 export function canonicalString(content: MemoryContent): string {
   assertNormalized(content.text);
+  if (content.refs !== undefined) {
+    for (const ref of content.refs) assertNormalized(ref);
+  }
+  if (content.meta !== undefined) assertJsonValue(content.meta, 'meta');
   const json = canonicalize(content);
   if (json === undefined) {
     throw new SchemaViolationError('content is not JSON-serializable');

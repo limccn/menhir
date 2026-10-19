@@ -7,7 +7,8 @@
     "test": "hardhat test",
     "typecheck": "hardhat build && tsc -p tsconfig.json --noEmit",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
-    "seed:sepolia": "hardhat run scripts/seed.ts --network baseSepolia"
+    "seed:sepolia": "hardhat run scripts/seed.ts --network baseSepolia",
+    "gas:snapshot": "hardhat test --gas-stats-json gas-snapshot.json"
   },
   "dependencies": {
     "@menhir/core": "workspace:*",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "5.0.7",
     "@types/node": "26.6.5",
+    "fast-check": "4.10.2",
     "hardhat": "3.20.0",
     "typescript": "7.0.2",
     "viem": "2.57.7"
