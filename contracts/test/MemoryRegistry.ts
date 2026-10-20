@@ -5,8 +5,8 @@ import { network } from "hardhat";
 import {
   commitmentHash as tsCommitmentHash,
   type Commitment,
-} from "@menhir/core";
-import { loadVectors } from "@menhir/core/vectors";
+} from "@limccn/menhir-core";
+import { loadVectors } from "@limccn/menhir-core/vectors";
 import { getAddress, type Hex } from "viem";
 
 const ZERO32 = `0x${"0".repeat(64)}` as Hex;
@@ -100,7 +100,7 @@ describe("MemoryRegistry", async function () {
     });
 
     it("TS commitmentHash == Solidity commitmentHash for the SHARED 100-struct corpus", async function () {
-      // The corpus is the committed artifact from @menhir/core, not a loop
+      // The corpus is the committed artifact from @limccn/menhir-core, not a loop
       // built here. A local loop proves only that two functions in this
       // process agree; the artifact is what migrates between repos and what
       // the golden values were frozen against. Gate G2 depends on this

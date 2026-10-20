@@ -13,7 +13,7 @@
  * browser consumer bundles the package root, the barrel is the thing that must
  * be proven safe.
  *
- * `@menhir/core/vectors` is intentionally NOT imported: it is the one
+ * `@limccn/menhir-core/vectors` is intentionally NOT imported: it is the one
  * Node-only subpath (filesystem loading), by design.
  */
 import * as root from '../src/index.js';

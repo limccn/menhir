@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { parseVectors, type Vectors } from './vectors.js';
 
 /**
- * Node-only vector loader. Exported as `@menhir/core/vectors`.
+ * Node-only vector loader. Exported as `@limccn/menhir-core/vectors`.
  *
  * The package root stays browser-safe (§1: no `node:*` imports reachable from
  * `.`); only this subpath touches the filesystem. Tests and the Solidity

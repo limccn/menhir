@@ -1,5 +1,5 @@
 {
-  // Node-only entry points (`@menhir/core/vectors`). Kept as a separate
+  // Node-only entry points (`@limccn/menhir-core/vectors`). Kept as a separate
   // program so the main build (`tsconfig.json`, browser-safe) never needs
   // @types/node — that separation is what enforces core-ts design §1: no
   // Node builtins reachable from the package root.

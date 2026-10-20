@@ -1,4 +1,4 @@
-# @menhir/core
+# @limccn/menhir-core
 
 Canonicalization and digest primitives shared by every MemoryOverEth component.
 
@@ -20,7 +20,7 @@ this package is designed to make impossible.
 | `tagToBytes32` / `bytes32ToTag` / `tagsToBytes32List` | UTF-8, right zero-pad, ≤32 bytes |
 | `memoryRegistryAbi` | Generated from the compiled contract — never hand-edited |
 
-`@menhir/core/vectors` is the one Node-only subpath: it loads the committed
+`@limccn/menhir-core/vectors` is the one Node-only subpath: it loads the committed
 golden corpus from disk. The package root is browser-safe, and the build
 enforces that — `vectors-node.ts` is excluded from the browser program, so a
 `node:*` import anywhere else fails to compile.
@@ -36,7 +36,7 @@ were never checked.
 ## Install
 
 ```powershell
-pnpm add @menhir/core
+pnpm add @limccn/menhir-core
 ```
 
 Node 24+. ESM only.

@@ -10,13 +10,13 @@ import {
   contentHash,
   type Commitment,
   type MemoryContent,
-} from "@menhir/core";
+} from "@limccn/menhir-core";
 import type { Hex } from "viem";
 
 import { scanLogs } from "./lib/scanLogs.js";
 
 // Seeds a deployed registry with a small, coherent set of memories so the UI
-// has real state to render. Everything here is derived with @menhir/core —
+// has real state to render. Everything here is derived with @limccn/menhir-core —
 // the same code the browser runs — so a bug in the digest rules would show up
 // as a mismatch rather than a plausible-looking fixture.
 //

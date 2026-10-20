@@ -17,3 +17,6 @@ contracts/**/*.js.map
 # NOTE: contracts/deployments/ is intentionally NOT ignored. It records the
 # canonical MemoryRegistry address per network — the only authoritative
 # pointer to a live deployment. Never `rm -rf` it; committing it is the point.
+
+# Local registry auth — never commit
+.npmrc

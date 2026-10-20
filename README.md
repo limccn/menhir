@@ -4,12 +4,12 @@ On-chain memory commitments for MemoryOverEth. Two packages:
 
 | Package | What it is |
 |---|---|
-| [`ts/`](./ts) — `@menhir/core` | Canonicalization (JCS RFC 8785), `keccak256`/`sha256` digests, CID and tag codecs, commitment hashing, and the generated registry ABI |
-| [`contracts/`](./contracts) — `@menhir/contracts` | `MemoryRegistry`: content-addressed commitments with ACL and an EIP-712 domain, no proxy, no upgrades |
+| [`ts/`](./ts) — `@limccn/menhir-core` | Canonicalization (JCS RFC 8785), `keccak256`/`sha256` digests, CID and tag codecs, commitment hashing, and the generated registry ABI |
+| [`contracts/`](./contracts) — `@limccn/menhir-contracts` | `MemoryRegistry`: content-addressed commitments with ACL and an EIP-712 domain, no proxy, no upgrades |
 
-`@menhir/core` exists so one byte sequence is hashed identically by the
+`@limccn/menhir-core` exists so one byte sequence is hashed identically by the
 contract, the browser, the gateway and the CLI. The Solidity test consumes the
-package's committed 100-struct corpus through `@menhir/core/vectors`, so a hash
+package's committed 100-struct corpus through `@limccn/menhir-core/vectors`, so a hash
 drift fails a test rather than producing a commitment that looks valid on chain.
 
 ## Deployed (Base Sepolia, 84532)
@@ -36,7 +36,7 @@ pnpm --dir menhir/contracts test   # 50 tests (incl. 10k fuzz)
 pnpm --dir menhir/contracts typecheck
 ```
 
-The two packages depend on each other through the workspace (`@menhir/core:
+The two packages depend on each other through the workspace (`@limccn/menhir-core:
 workspace:*`), so they must be installed together.
 
 ## Conventions

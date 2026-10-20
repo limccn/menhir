@@ -1,5 +1,5 @@
 {
-  "name": "@menhir/contracts",
+  "name": "@limccn/menhir-contracts",
   "version": "0.1.0",
   "private": true,
   "description": "MemoryRegistry: content-addressed memory commitments with ACL and EIP-712, for MemoryOverEth.",
@@ -25,7 +25,7 @@
     "verify:local": "hardhat run scripts/verify-local.ts --network baseSepolia"
   },
   "dependencies": {
-    "@menhir/core": "workspace:*",
+    "@limccn/menhir-core": "workspace:*",
     "@openzeppelin/contracts": "5.6.1"
   },
   "devDependencies": {

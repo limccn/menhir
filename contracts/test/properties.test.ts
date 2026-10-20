@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { network } from "hardhat";
-import { commitmentHash as tsCommitmentHash, type Commitment } from "@menhir/core";
+import { commitmentHash as tsCommitmentHash, type Commitment } from "@limccn/menhir-core";
 import fc from "fast-check";
 import type { Hex } from "viem";
 

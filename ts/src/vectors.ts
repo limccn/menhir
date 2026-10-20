@@ -23,7 +23,7 @@ export interface Vectors {
  * Parse the committed golden corpus from already-read text.
  *
  * Pure — no filesystem access. This module is therefore safe for the browser
- * bundle; loading the files from disk lives in `@menhir/core/vectors`
+ * bundle; loading the files from disk lives in `@limccn/menhir-core/vectors`
  * (`src/vectors-node.ts`), the package's only Node-only entry point.
  *
  * `blockHeight` is stored as a decimal string in the artifacts (JSON has no
