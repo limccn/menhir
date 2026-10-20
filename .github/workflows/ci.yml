@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# This repo is two packages of the MemoryOverEth workspace. CI assembles a
+# workspace containing both so `@menhir/core` resolves as `workspace:*` from the
+# contracts project, exactly as it does locally.
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: workspace/menhir
+
+      - name: Assemble workspace
+        working-directory: workspace
+        run: |
+          printf 'packages:\n  - "menhir/ts"\n  - "menhir/contracts"\n' > pnpm-workspace.yaml
+          printf '{"name":"ci-workspace","private":true,"packageManager":"pnpm@12.11.2"}\n' > package.json
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: workspace/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: pnpm install --no-frozen-lockfile
+        working-directory: workspace
+
+      # The library first: the contract suite consumes its committed corpus.
+      - run: pnpm --filter @menhir/core build
+        working-directory: workspace
+      - run: pnpm --filter @menhir/core test
+        working-directory: workspace
+      - run: pnpm --filter @menhir/core typecheck
+        working-directory: workspace
+      - run: pnpm --filter @menhir/core check:browser
+        working-directory: workspace
+
+      - run: pnpm --filter @menhir/contracts test
+        working-directory: workspace
+      - run: pnpm --filter @menhir/contracts typecheck
+        working-directory: workspace
+
+      # The vector corpus is a contract between repos; regenerating it must not
+      # change a byte.
+      - name: Vectors are reproducible
+        working-directory: workspace
+        run: |
+          pnpm --filter @menhir/core generate:vectors
+          git -C menhir diff --exit-code -- ts/test/vectors

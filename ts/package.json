@@ -1,6 +1,26 @@
 {
   "name": "@menhir/core",
   "version": "0.1.0",
+  "description": "Canonicalization, digests, CID and tag codecs shared by MemoryOverEth (JCS RFC 8785, keccak256, sha256).",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/limccn/menhir.git",
+    "directory": "ts"
+  },
+  "homepage": "https://github.com/limccn/menhir/tree/main/ts",
+  "bugs": {
+    "url": "https://github.com/limccn/menhir/issues"
+  },
+  "keywords": [
+    "memory",
+    "ethereum",
+    "jcs",
+    "rfc8785",
+    "keccak256",
+    "cid",
+    "ipfs"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,14 +35,23 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.test.json",
     "generate:vectors": "tsx test/generate-vectors.ts",
-    "check:browser": "tsc --noEmit --ignoreConfig --lib es2022,dom --strict --module esnext --moduleResolution bundler --skipLibCheck test/browser-entry.ts"
+    "check:browser": "tsc --noEmit --ignoreConfig --lib es2022,dom --strict --module esnext --moduleResolution bundler --skipLibCheck test/browser-entry.ts",
+    "prepublishOnly": "pnpm build && pnpm test"
   },
   "dependencies": {
     "canonicalize": "5.1.0",
