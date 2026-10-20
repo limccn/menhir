@@ -1,15 +1,22 @@
 /**
  * Browser-safety smoke (core-ts design §4, PRD AC).
  *
- * Compiled by `pnpm check:browser` with `--lib es2022,dom`. If any module
- * reachable from the package root imports a Node builtin, this fails to
- * compile — that is the whole test. It is deliberately not run under vitest:
- * vitest's environment would mask a `node:` import that a real browser
+ * Compiled by `pnpm check:browser` with `--lib es2022,dom` and NO node types.
+ * If any module reachable from the package root imports a Node builtin, this
+ * fails to compile — that is the whole test. It is deliberately not run under
+ * vitest: vitest's environment would mask a `node:` import that a real browser
  * bundle cannot resolve.
  *
- * `@menhir/core/vectors` is intentionally NOT imported here: it is the one
+ * **It imports the root barrel** (review 2026-10-20). The previous version
+ * imported each module by path, so adding `export * from './vectors-node.js'`
+ * to `src/index.ts` passed this check — only `build` caught it. Since a
+ * browser consumer bundles the package root, the barrel is the thing that must
+ * be proven safe.
+ *
+ * `@menhir/core/vectors` is intentionally NOT imported: it is the one
  * Node-only subpath (filesystem loading), by design.
  */
+import * as root from '../src/index.js';
 import {
   canonicalBytes,
   canonicalString,
@@ -37,6 +44,10 @@ import {
   TagTooLongError,
   UnknownKeyError,
 } from '../src/errors.js';
+
+// Touch the barrel so the import is not elided: a type-only or unused import
+// could let a leak through without the compiler resolving the module graph.
+export const rootExportCount = Object.keys(root).length;
 
 const content = parseMemoryContent({ text: 'browser smoke', format: 'text.v0' });
 

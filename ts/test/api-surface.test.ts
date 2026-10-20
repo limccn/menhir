@@ -56,10 +56,14 @@ describe('public API surface', () => {
     expect(Object.keys(core).sort()).toEqual(EXPECTED_EXPORTS);
   });
 
-  it('exports no value named like a Node builtin leak', () => {
-    for (const name of Object.keys(core)) {
-      expect(name.startsWith('node:')).toBe(false);
-    }
+  it('does not export the Node-only vector loader from the root', () => {
+    // `node:` cannot appear as an export *name* (namespace keys are identifiers),
+    // so the previous check could never fail. The real leak is the Node-only
+    // loader (`loadVectors`) becoming reachable from the browser-safe root.
+    // It must only be reachable via the `./vectors` subpath.
+    expect(Object.keys(core)).not.toContain('loadVectors');
+    // `parseVectors` IS expected at the root — it is pure.
+    expect(Object.keys(core)).toContain('parseVectors');
   });
 
   it('error classes share a code discriminant', () => {

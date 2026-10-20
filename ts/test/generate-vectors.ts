@@ -110,7 +110,12 @@ for (let i = 0; i < 100; i += 1) {
     cidDigest: B32(0x4000 + i),
     signer: ADDR(0x1000 + (i % 10)),
     blockHeight: BigInt(48_300_000 + i),
-    op: 0,
+    // `op` is 1 on every tenth entry. The CONTRACT rejects op != 0 in M1, so
+    // this half of the hash space has no on-chain coverage; it is still part
+    // of the encoding (D-8) and M3 compaction will use it. Without entries
+    // here an encoder refactor that mishandles a nonzero op would pass every
+    // test until that ships.
+    op: (i % 10 === 9 ? 1 : 0) as 0 | 1,
     // Chains: every 4th entry is a root, the rest link to the previous entry.
     prev: i % 4 === 0 ? ZERO32 : B32(0x2000 + i - 1),
   };

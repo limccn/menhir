@@ -33,7 +33,11 @@ const commitmentArb: fc.Arbitrary<Commitment> = fc.record({
   cidDigest: bytes32,
   signer: address,
   blockHeight: fc.bigInt({ min: 0n, max: (1n << 64n) - 1n }),
-  op: fc.constant(0 as const),
+  // Both values, not just 0: the contract rejects op=1 in M1, but the TYPE is
+  // `uint8` in the encoding and M3 will use it, so the TS encoder must handle
+  // it correctly now (P1 below compares against the contract's pure view,
+  // which accepts any op for hashing).
+  op: fc.oneof(fc.constant(0 as const), fc.constant(1 as const)),
   prev: fc.oneof(fc.constant(ZERO32), bytes32),
 });
 

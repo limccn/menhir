@@ -44,6 +44,14 @@ key has two deployments:
 | `0x5F1070…825a` | 0 | orphaned — no record, no seed, **not canonical** |
 | `0xC85ed1…DFEF` | 1 | canonical — recorded, seeded |
 
+Chain-verifiable evidence (2026-10-20): the deployer
+`0x330c67886612ba88b4895739f2e610f01f233d78` has **nonce 4**, so nonces 0–1
+produced the two registries above and 2–3 the seed transactions. The orphan's
+full address is not recorded anywhere by design (the crashed run died before
+writing its record); its existence is inferred from the nonce plus the
+journal's transcript, not from a deployment artifact. Do not treat the
+truncated `0x5F1070…825a` as a usable identifier.
+
 `deploy.ts` refuses to run when `deployments/base-sepolia.json` exists. Do not
 delete that file to "re-deploy"; read the journal entry first.
 
@@ -51,7 +59,7 @@ delete that file to "re-deploy"; read the journal entry first.
 
 ```powershell
 # from the workspace root
-pnpm --dir menhir/contracts test              # 39 tests, no network needed
+pnpm --dir menhir/contracts test              # 50 tests, no network needed
 pnpm --dir menhir/contracts gas:snapshot      # writes gas-snapshot.json
 pnpm --dir menhir/contracts typecheck
 
@@ -71,7 +79,7 @@ is rate-limited upstream on the free tier.
 ### 1. Sourcify — verified (`exact_match`)
 
 ```powershell
-pnpm --dir menhir/contracts verify:sourcify
+pnpm --dir menhir/contracts verify:sourcify   # address baked into the script
 ```
 
 Status confirmed via `https://sourcify.dev/server/v2/contract/84532/0xC85ed11d3065739F1829A114e420584bEC3FDFEF`

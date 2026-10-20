@@ -14,5 +14,12 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/vectors.ts", "src/vectors-node.ts", "src/commitment.ts", "src/canon.ts", "src/errors.ts"]
+  "include": ["src/vectors.ts", "src/vectors-node.ts", "src/commitment.ts", "src/canon.ts", "src/errors.ts"],
+  // MANDATORY: `include` cannot override an inherited `exclude`, and the base
+  // config excludes `src/vectors-node.ts` to keep the root export browser-safe.
+  // Without this empty exclude the Node program silently drops the very file
+  // it exists to compile — the build "succeeds" and emits no vectors-node.js,
+  // so a clean consumer gets ERR_MODULE_NOT_FOUND at runtime. Verified by a
+  // clean-room build: empty dist/ of vectors-node before, present after.
+  "exclude": []
 }

@@ -1,4 +1,5 @@
 import { sha256 } from 'viem';
+import { InvalidHexError } from './errors.js';
 
 /** sha256(bytes) — the retrieval-layer integrity root (menhir spec §3.3, D-9). */
 export function cidDigest(bytes: Uint8Array): `0x${string}` {
@@ -48,14 +49,30 @@ export function cidV1Raw(bytes: Uint8Array): string {
  * key without knowing the CID at write time.
  */
 export function cidV1RawFromDigest(digest: `0x${string}`): string {
+  const bytes = hexToBytes(digest);
+  if (bytes.length !== 32) {
+    throw new InvalidHexError(`cid digest must be 32 bytes, got ${bytes.length}`);
+  }
   const payload = new Uint8Array(CIDV1_RAW_PREFIX.length + 32);
   payload.set(CIDV1_RAW_PREFIX, 0);
-  payload.set(hexToBytes(digest), CIDV1_RAW_PREFIX.length);
+  payload.set(bytes, CIDV1_RAW_PREFIX.length);
   return `b${base32Encode(payload)}`;
 }
 
+/**
+ * Strict hex → bytes. Rejects odd length and non-hex characters instead of
+ * producing silently wrong bytes: `parseInt('zz', 16)` is NaN, which becomes
+ * `0` inside a Uint8Array, so a truncated or malformed digest from a chain
+ * read would yield a valid-looking CID that fetches nothing (review 2026-10-20).
+ */
 function hexToBytes(hex: string): Uint8Array {
   const clean = hex.startsWith('0x') ? hex.slice(2) : hex;
+  if (clean.length % 2 !== 0) {
+    throw new InvalidHexError(`hex string has odd length: ${clean.length}`);
+  }
+  if (!/^[0-9a-fA-F]*$/.test(clean)) {
+    throw new InvalidHexError(`hex string has non-hex characters: ${hex.slice(0, 10)}…`);
+  }
   const out = new Uint8Array(clean.length / 2);
   for (let i = 0; i < out.length; i += 1) {
     out[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16);

@@ -9,8 +9,8 @@
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
     "seed:sepolia": "hardhat run scripts/seed.ts --network baseSepolia",
     "gas:snapshot": "hardhat test --gas-stats-json gas-snapshot.json",
-    "verify:blockscout": "hardhat verify blockscout --network baseSepolia",
-    "verify:sourcify": "hardhat verify sourcify --network baseSepolia",
+    "verify:blockscout": "hardhat verify blockscout --network baseSepolia 0xC85ed11d3065739F1829A114e420584bEC3FDFEF",
+    "verify:sourcify": "hardhat verify sourcify --network baseSepolia 0xC85ed11d3065739F1829A114e420584bEC3FDFEF",
     "verify:local": "hardhat run scripts/verify-local.ts --network baseSepolia"
   },
   "dependencies": {

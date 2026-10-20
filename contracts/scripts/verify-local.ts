@@ -43,17 +43,42 @@ function stripHex(hex: string): string {
  * some toolchains). Comparing raw runtime bytes without masking them yields a
  * false mismatch for every contract using OZ's EIP712 caches.
  */
-function maskImmutables(runtime: string, artifact: Artifact): string {
+function maskImmutables(runtime: string, artifact: Artifact): { masked: string; bytes: number } {
   const bytes = stripHex(runtime);
   const chars = bytes.split("");
+  let maskedBytes = 0;
+
   for (const refs of Object.values(artifact.immutableReferences ?? {})) {
     for (const ref of refs) {
       const start = ref.start * 2;
       const end = start + ref.length * 2;
-      for (let i = start; i < end && i < chars.length; i += 1) chars[i] = "0";
+      // Bounds-check before masking. Without it, a malformed artifact (or one
+      // from a stale build-info) could claim references beyond the runtime and
+      // the loop would silently clamp — reporting MATCH while comparing less
+      // than it appears to.
+      if (ref.start + ref.length > bytes.length / 2) {
+        throw new Error(
+          `artifact claims an immutable at byte ${ref.start}+${ref.length}, ` +
+            `beyond the ${bytes.length / 2}-byte runtime`,
+        );
+      }
+      for (let i = start; i < end; i += 1) chars[i] = "0";
+      maskedBytes += ref.length;
     }
   }
-  return chars.join("");
+
+  // A sanity ceiling: immutables should be a small fraction of the code. If
+  // this trips, the artifact's references are wrong and the comparison would be
+  // meaningless.
+  const fraction = maskedBytes / (bytes.length / 2 || 1);
+  if (fraction > 0.2) {
+    throw new Error(
+      `refusing to mask ${(fraction * 100).toFixed(1)}% of the runtime ` +
+        `(${maskedBytes} of ${bytes.length / 2} bytes) — artifact references look wrong`,
+    );
+  }
+
+  return { masked: chars.join(""), bytes: maskedBytes };
 }
 
 async function main() {
@@ -88,13 +113,17 @@ async function main() {
   const onchainRuntime = (await publicClient.getBytecode({ address: deployment.address })) ?? "0x";
   if (onchainRuntime === "0x") throw new Error("no code at the recorded address");
 
-  const maskedChain = maskImmutables(onchainRuntime, artifact);
-  const maskedLocal = maskImmutables(artifact.deployedBytecode, artifact);
-  const runtimeMatch = maskedChain === maskedLocal;
+  const chainMask = maskImmutables(onchainRuntime, artifact);
+  const localMask = maskImmutables(artifact.deployedBytecode, artifact);
+  const runtimeMatch = chainMask.masked === localMask.masked;
 
   console.log(`runtime on-chain  ${stripHex(onchainRuntime).length / 2} bytes`);
   console.log(`runtime local     ${stripHex(artifact.deployedBytecode).length / 2} bytes`);
-  console.log(`immutable slots   ${Object.keys(artifact.immutableReferences ?? {}).length} refs masked`);
+  console.log(
+    `immutable slots   ${Object.keys(artifact.immutableReferences ?? {}).length} refs, ` +
+      `${chainMask.bytes} bytes masked ` +
+      `(${((chainMask.bytes / (stripHex(onchainRuntime).length / 2)) * 100).toFixed(1)}%)`,
+  );
   console.log(`RUNTIME MATCH     ${runtimeMatch ? "YES" : "NO"}`);
 
   // 2. Creation input from the deploy transaction, compared exactly.

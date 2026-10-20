@@ -60,12 +60,24 @@ describe('commitment vector corpus', () => {
   it('restores blockHeight as bigint and op as a number', () => {
     for (const vector of commitments) {
       expect(typeof vector.commitment.blockHeight).toBe('bigint');
-      expect(vector.commitment.op).toBe(0);
+      expect([0, 1]).toContain(vector.commitment.op);
     }
   });
 
   it('contains both chain roots and linked entries', () => {
     const roots = commitments.filter((v) => /^0x0{64}$/.test(v.commitment.prev));
     expect(roots.length).toBe(25);
+  });
+
+  it('covers both op values', () => {
+    // The contract rejects op != 0 in M1, so op=1 has no on-chain coverage.
+    // It is still part of the encoding, and M3 compaction will use it; leaving
+    // it unexercised means an encoder bug there stays invisible until then.
+    const byOp = new Map<number, number>();
+    for (const v of commitments) {
+      byOp.set(v.commitment.op, (byOp.get(v.commitment.op) ?? 0) + 1);
+    }
+    expect(byOp.get(0)).toBeGreaterThan(0);
+    expect(byOp.get(1)).toBeGreaterThan(0);
   });
 });

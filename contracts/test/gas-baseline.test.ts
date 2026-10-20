@@ -40,6 +40,7 @@ interface Stat {
   min: number;
   max: number;
   avg: number;
+  median: number;
   count: number;
 }
 
@@ -82,15 +83,34 @@ describe("gas baseline (menhir spec §8 ±20%)", () => {
     );
   });
 
-  it("retract (with replacedBy) stays inside the band", () => {
+  /**
+   * `retract` has THREE paths in the snapshot, distinguished by position:
+   *
+   *   min    ~26k  idempotent second call — early return, no write
+   *   median ~50k  pure delete — one SSTORE (`_retracted[h] = true`)
+   *   max    ~75k  delete + replacedBy — two SSTOREs
+   *
+   * Banding only `max` against the replacedBy figure (the review's finding)
+   * would let a pure-delete regression hide underneath it: if that path grew
+   * to 73k, every test would still pass while the spec's 47k budget was
+   * breached by more than half. Each path is banded at its own position.
+   */
+  it("retract (pure delete) matches the spec's 47k row", () => {
     const { functions } = contract(JSON.parse(readFileSync(SNAPSHOT, "utf8")) as Snapshot);
     const retract = functions.retract;
     assert.ok(retract, "retract must appear in the snapshot");
-    // The snapshot's MAX is the replacedBy path (two SSTOREs). Its MIN is the
-    // idempotent second-retract no-op (~26k: a cold SLOAD plus the early
-    // return), which the spec's gas table never models because it writes
-    // nothing. Comparing the min against the pure-delete figure would be a
-    // false failure, so only the max is banded here.
+    const low = SPEC.retract * (1 - BAND);
+    const high = SPEC.retract * (1 + BAND);
+    assert.ok(
+      retract.median >= low && retract.median <= high,
+      `retract median ${retract.median} outside pure-delete band ${low.toFixed(0)}..${high.toFixed(0)}`,
+    );
+  });
+
+  it("retract (with replacedBy) matches the spec's 69k row", () => {
+    const { functions } = contract(JSON.parse(readFileSync(SNAPSHOT, "utf8")) as Snapshot);
+    const retract = functions.retract;
+    assert.ok(retract, "retract must appear in the snapshot");
     const low = SPEC.retractWithReplacedBy * (1 - BAND);
     const high = SPEC.retractWithReplacedBy * (1 + BAND);
     assert.ok(
@@ -99,14 +119,17 @@ describe("gas baseline (menhir spec §8 ±20%)", () => {
     );
   });
 
-  it("idempotent retract stays cheap (documents the no-op path)", () => {
+  it("the three retract paths stay distinguishable", () => {
+    // This is what makes the two bands above meaningful. If idempotent ever
+    // started writing, its cost would climb into the pure-delete band and the
+    // median-of-three assumption behind the pure-delete test would be wrong.
     const { functions } = contract(JSON.parse(readFileSync(SNAPSHOT, "utf8")) as Snapshot);
-    const min = functions.retract.min;
-    // If this ever jumps toward the pure-delete cost, the idempotency early
-    // return was lost and a second retract started writing state again.
+    const { min, median, max } = functions.retract;
+    assert.ok(min < median, `idempotent (${min}) must be cheaper than pure delete (${median})`);
+    assert.ok(median < max, `pure delete (${median}) must be cheaper than replacedBy (${max})`);
     assert.ok(
-      min < SPEC.retract,
-      `retract min ${min} suggests the idempotent no-op stopped short-circuiting`,
+      min < SPEC.retract * 0.7,
+      `idempotent ${min} is too close to the pure-delete budget — did the early return change?`,
     );
   });
 

@@ -45,6 +45,90 @@ describe('R1 — non-JSON object types are rejected, never coerced', () => {
   });
 });
 
+describe('R3 — the gate cannot be bypassed at the public entry points', () => {
+  const base = { text: 'x', format: 'text.v0' } as const;
+
+  it.each([
+    ['refs as a Set', { ...base, refs: new Set(['a']) }],
+    ['refs as a string', { ...base, refs: 'abc' }],
+    ['refs containing a number', { ...base, refs: [42] }],
+    ['refs containing null', { ...base, refs: [null] }],
+    ['unknown top-level key', { ...base, tags: ['secret'] }],
+    ['unsupported format', { text: 'x', format: 'text.v1' }],
+    ['missing format', { text: 'x' }],
+    ['non-string text', { text: 42, format: 'text.v0' }],
+    ['Date as text', { text: new Date('2020-01-01T00:00:00Z'), format: 'text.v0' }],
+  ])('rejects %s when canonicalString is called directly', (_label, value) => {
+    expect(() => canonicalString(value as never)).toThrow();
+  });
+
+  it('rejects a root toJSON that would serialize different content', () => {
+    const evil = {
+      text: 'x',
+      format: 'text.v0' as const,
+      toJSON() {
+        return { text: 'evil', format: 'text.v0' };
+      },
+    };
+    expect(() => canonicalString(evil)).toThrow(SchemaViolationError);
+  });
+
+  it('rejects an own toJSON nested inside meta', () => {
+    // Cast because this is deliberately not a valid MemoryContent: the point
+    // is that the runtime gate must catch what the type system rejects.
+    const evil = {
+      ...base,
+      meta: {
+        toJSON() {
+          return { s: 'evil' };
+        },
+      },
+    } as unknown as Parameters<typeof canonicalString>[0];
+    expect(() => canonicalString(evil)).toThrow(SchemaViolationError);
+  });
+
+  it('reads each property exactly once (no TOCTOU window)', () => {
+    // A getter that answers differently on the second read is the shape of the
+    // bug: validate the first answer, serialize the second. Snapshotting means
+    // there is no second read.
+    let reads = 0;
+    const evil = {
+      format: 'text.v0' as const,
+      get text() {
+        reads += 1;
+        return reads === 1 ? 'safe' : 'é'; // NFC then NFD
+      },
+    };
+    expect(canonicalString(evil as never)).toBe('{"format":"text.v0","text":"safe"}');
+    expect(reads).toBe(1);
+  });
+
+  it('a non-string text yields a typed error, not a TypeError', () => {
+    expect(() => canonicalString({ text: 42 as never, format: 'text.v0' })).toThrow(
+      SchemaViolationError,
+    );
+    expect(() => canonicalString({ text: 42 as never, format: 'text.v0' })).not.toThrow(
+      TypeError,
+    );
+  });
+
+  it('parseMemoryContent and canonicalString enforce the same rules', () => {
+    // One gate, not two. If the parser accepted something the hasher rejects
+    // (or vice versa), callers would see inconsistent behaviour on the same
+    // input depending on which function they happened to call.
+    const inputs: unknown[] = [
+      { ...base, refs: new Set(['a']) },
+      { ...base, tags: [] },
+      { text: 'x', format: 'text.v1' },
+      { ...base, meta: { s: 'é' } },
+    ];
+    for (const input of inputs) {
+      expect(() => parseMemoryContent(input), 'parse').toThrow();
+      expect(() => canonicalString(input as never), 'canon').toThrow();
+    }
+  });
+});
+
 describe('R2 — normalization is enforced for every string in the hashed object', () => {
   const base = { text: 'x', format: 'text.v0' } as const;
   const NFD = 'é'; // e + combining acute
