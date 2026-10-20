@@ -12,6 +12,16 @@ contract, the browser, the gateway and the CLI. The Solidity test consumes the
 package's committed 100-struct corpus through `@limccn/menhir-core/vectors`, so a hash
 drift fails a test rather than producing a commitment that looks valid on chain.
 
+## Install
+
+```bash
+npm install @limccn/menhir-core
+```
+
+The package is published to npmjs and GitHub Packages as `0.1.0`. The root
+export is browser-safe; the Node-only vector corpus lives at
+`@limccn/menhir-core/vectors`.
+
 ## Deployed (Base Sepolia, 84532)
 
 ```
