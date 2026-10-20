@@ -65,23 +65,59 @@ pnpm --dir menhir/contracts seed:sepolia
 
 ## Verification
 
-Blockscout (free, no API key — decision D-11):
+Three independent paths. **Sourcify is the one that succeeded**; Blockscout
+is rate-limited upstream on the free tier.
+
+### 1. Sourcify — verified (`exact_match`)
 
 ```powershell
-npx hardhat verify blockscout --network baseSepolia 0xC85ed11d3065739F1829A114e420584bEC3FDFEF
+pnpm --dir menhir/contracts verify:sourcify
 ```
 
-Explorer: `https://base-sepolia.blockscout.com/address/0xC85ed11d3065739F1829A114e420584bEC3FDFEF`
+Status confirmed via `https://sourcify.dev/server/v2/contract/84532/0xC85ed11d3065739F1829A114e420584bEC3FDFEF`
+→ `match: "exact_match"`. Repo UI:
+`https://sourcify.dev/server/repo-ui/84532/0xC85ed11d3065739F1829A114e420584bEC3FDFEF`
 
-**If verification fails with "Fail - Unable to verify"**, check the public
-rate limit first — `https://base-sepolia.blockscout.com/api` returns
-`{"message":"Too many requests..."}` when throttled, and Hardhat surfaces
-that as a generic failure. Wait and retry before suspecting the build.
+`exact_match` is the strongest Sourcify outcome: the source, the compiler
+settings, the metadata hash and the bytecode all match. It is not a partial
+or metadata-patched match.
 
-The local artifact and the on-chain bytecode were compared byte-for-byte on
-2026-10-19: the creation input is 6287 bytes and matches exactly. Immutable
-slots (OpenZeppelin EIP-712 caches) legitimately differ between the artifact
-template and the deployed runtime — that is expected, not drift.
+### 2. Bytecode reproduction (explorer-independent, always available)
+
+```powershell
+pnpm --dir menhir/contracts verify:local
+```
+
+Proves the deployed runtime reproduces from committed source with immutable
+slots masked. Measured 2026-10-20:
+
+```
+runtime on-chain / local   5387 bytes each
+immutable refs masked      7   (OZ EIP-712 caches)
+RUNTIME MATCH              YES
+creation input             6287 bytes, CREATION MATCH YES
+eip712 name / chainId      MemoryRegistry / 84532
+```
+
+This answers "is the deployment what the repo says it is" without depending
+on any explorer. It does **not** publish source.
+
+### 3. Blockscout — currently limited
+
+```powershell
+pnpm --dir menhir/contracts verify:blockscout
+```
+
+Failure mode seen on 2026-10-20: the *minimal* compiler input fails, then
+Hardhat retries with the full input and gets **HTTP 429**. Separately,
+`https://base-sepolia.blockscout.com/api` returns
+`{"message":"Too many requests..."}` for plain API calls too, so the free
+tier is the constraint — not the build. Retry later; no code change is
+required. The Blockscout record already serves correct creation and deployed
+bytecode, so its index is intact.
+
+**Do not "fix" a 429 by changing compiler settings.** Sourcify's
+`exact_match` on the same artifact rules out a build mismatch.
 
 ## Faucet
 
