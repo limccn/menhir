@@ -33,6 +33,10 @@ lived only in the parser would be bypassable. Validation snapshots the object
 once and hashes the snapshot, so a getter or `toJSON` cannot supply bytes that
 were never checked.
 
+An own `"__proto__"` member is snapshotted with `Object.defineProperty`, exactly
+as `JSON.parse` represents it, so it is serialized and hashed like any other
+member instead of being dropped (M-2). It cannot become the object's prototype.
+
 ## Install
 
 ```powershell
@@ -44,7 +48,7 @@ Node 24+. ESM only.
 ## Test
 
 ```powershell
-pnpm test        # 94 tests
+pnpm test        # 96 tests
 pnpm typecheck
 pnpm check:browser
 ```

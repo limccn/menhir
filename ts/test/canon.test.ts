@@ -122,6 +122,38 @@ describe('canonical form — JCS (RFC 8785)', () => {
     expect(a).toBe('{"format":"text.v0","meta":{"a":2,"b":1},"text":"x"}');
   });
 
+  it('represents an own __proto__ member instead of dropping it (M-2)', () => {
+    // JSON.parse is what produces an OWN `__proto__` data property; an object
+    // literal would set the prototype and never reach the snapshot as a key.
+    const withProto = JSON.parse(
+      '{"text":"own proto","format":"text.v0","meta":{"__proto__":{"admin":true}}}',
+    );
+    const empty = { text: 'own proto', format: 'text.v0' as const, meta: {} };
+
+    const parsed = parseMemoryContent(withProto);
+    // The key survives as an ordinary own member.
+    expect(Object.keys(parsed.meta!)).toContain('__proto__');
+    // ...and it is data, not an inherited property.
+    expect((parsed.meta as Record<string, unknown>).admin).toBeUndefined();
+    expect(Object.getPrototypeOf(parsed.meta)).toBe(Object.prototype);
+
+    // The canonical bytes agree with the reference implementation.
+    expect(canonicalString(withProto)).toBe(
+      '{"format":"text.v0","meta":{"__proto__":{"admin":true}},"text":"own proto"}',
+    );
+    // Injectivity: it cannot collide with the empty-meta content.
+    expect(contentHash(withProto)).not.toBe(contentHash(empty));
+  });
+
+  it('round-trips a parsed __proto__ member without a schema error', () => {
+    const parsed = parseMemoryContent(
+      JSON.parse('{"text":"roundtrip","format":"text.v0","meta":{"__proto__":{"x":1}}}'),
+    );
+    const once = canonicalString(parsed);
+    const twice = canonicalString(parseMemoryContent(JSON.parse(once)));
+    expect(twice).toBe(once);
+  });
+
   it('canonicalBytes and contentHash agree with an independent keccak256', () => {
     // The hash rule is keccak256(JCS bytes). Recomputing it here through a
     // separate path is the point: if canonicalBytes ever drifts, this fails.

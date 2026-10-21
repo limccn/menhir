@@ -47,6 +47,12 @@ const CONTENT_INPUTS: unknown[] = [
     },
   },
   { text: 'empty meta object', format: 'text.v0', meta: {} },
+  // Own `__proto__` key (M-2). Only JSON.parse creates an own data property
+  // here; an object literal would set the prototype instead and the vector
+  // would silently encode the wrong thing.
+  JSON.parse(
+    '{"text":"own proto key","format":"text.v0","meta":{"__proto__":{"admin":true}}}',
+  ),
   { text: 'minimal', format: 'text.v0' },
 
   // --- CJK / emoji (user content is Chinese-heavy) ---------------------------

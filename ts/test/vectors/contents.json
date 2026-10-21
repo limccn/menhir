@@ -37,6 +37,21 @@
   },
   {
     "content": {
+      "text": "own proto key",
+      "format": "text.v0",
+      "meta": {
+        "__proto__": {
+          "admin": true
+        }
+      }
+    },
+    "canonical": "{\"format\":\"text.v0\",\"meta\":{\"__proto__\":{\"admin\":true}},\"text\":\"own proto key\"}",
+    "contentHash": "0x1525eac2666179a01b0449eeef229847924b6e31f74a080130cf36b50354d7e8",
+    "cidDigest": "0x56c46741342927a568b1d7c6c28aba33f055faf3fa9ed8def46b5c69b693d357",
+    "cidV1Raw": "bafkreicwyrtucnbje6swrmoxy3bivort6bk7v472t3mn55dllru3ne6tk4"
+  },
+  {
+    "content": {
       "text": "minimal",
       "format": "text.v0"
     },

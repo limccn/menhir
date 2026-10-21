@@ -107,11 +107,21 @@ function snapshotJsonValue(value: unknown, path: string, depth = 0): JsonValue {
     // Own enumerable string keys, read exactly once each.
     for (const key of Object.keys(value)) {
       assertNormalized(key);
-      out[key] = snapshotJsonValue(
-        (value as Record<string, unknown>)[key],
-        `${path}.${key}`,
-        depth + 1,
-      );
+      // Define, never assign. `out["__proto__"] = value` would invoke the
+      // inherited setter: the key would vanish from Object.keys and the
+      // snapshot's prototype would become attacker-controlled (M-2). An own
+      // data property matches what JSON.parse itself produces, so the
+      // canonical bytes agree with RFC 8785 reference implementations.
+      Object.defineProperty(out, key, {
+        value: snapshotJsonValue(
+          (value as Record<string, unknown>)[key],
+          `${path}.${key}`,
+          depth + 1,
+        ),
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
     }
     return out;
   }
