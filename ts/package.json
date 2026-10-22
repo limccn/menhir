@@ -1,6 +1,6 @@
 {
   "name": "@limccn/menhir-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Canonicalization, digests, CID and tag codecs shared by MemoryOverEth (JCS RFC 8785, keccak256, sha256).",
   "license": "Apache-2.0",
   "repository": {
